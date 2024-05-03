@@ -1,0 +1,67 @@
+openapi: '3.0.3'
+info:
+  version: 1.0.0
+  title: Bash-script server
+paths:
+  /commands:
+    get:
+#      - in: query
+#        name: id
+#        required: false
+#        description: "ID of the user"
+#        allowEmptyValue: false
+#        schema:
+#          type: int
+      responses:
+        '200':
+          description: 'результаты поиска по запросу'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Commands'
+        '400':
+          description: 'не верные параметры фильтрации'
+  /commands/{command_id}:
+    get:
+
+  /commands/{command_id}/run:
+    post:
+
+
+
+components:
+  schemas:
+    Command:
+      type: object
+      required:
+        - id
+        - body_script
+        - response
+      properties:
+        id:
+          type: integer
+          format: int64
+        body_script:
+          type: string
+        response:
+          type: string
+    Commands:
+      type: array
+      maximum: 10
+      items:
+        $ref: "#/components/schemas/Command"
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+
+
