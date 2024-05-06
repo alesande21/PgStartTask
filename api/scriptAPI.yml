@@ -1,0 +1,159 @@
+openapi: '3.0.3'
+info:
+  version: 1.0.0
+  title: Bash-script server
+paths:
+  /commands:
+    get:
+#      - in: query
+#        name: id
+#        required: false
+#        description: "ID of the user"
+#        allowEmptyValue: false
+#        schema:
+#          type: int
+      responses:
+        '200':
+          description: 'Команды найдены'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Commands'
+        default:
+          description: 'Ошибка по запросу команд'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      summary: 'Создание и добавление команды'
+      operationId: createCommand
+      tags:
+        - commands
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Command"
+        required: true
+      responses:
+        '201':
+          description: 'Команда успешно добавлена'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatusMessage"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /commands/{command_id}:
+    get:
+      summary: 'Получение команды по идентификатору'
+      operationId: showCommandById
+      tags:
+        - commands
+      parameters:
+        - name: command_id
+          in: path
+          required: true
+          description: The id of the command to retrieve
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Command"
+        default:
+          description: 'Ошибка получение команды по идентификатору'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /commands/{command_id}/run:
+    post:
+      summary: 'Запуск команды по идентификатору'
+      operationId: runCommandById
+      tags:
+        - commands
+      parameters:
+        - name: command_id
+          in: path
+          required: true
+          description: The id of the command to retrieve
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'Успешный запуск команды по идентификатору'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatusMessage"
+        default:
+          description: 'Что-то пошло не так при запуске команды по идентификатору'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+
+
+components:
+  schemas:
+    StatusMessage:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+    Command:
+      type: object
+      required:
+        - id
+        - body_script
+        - result_run_script
+        - status
+      properties:
+        id:
+          type: integer
+          format: int64
+        body_script:
+          type: string
+        result_run_script:
+          type: string
+        status:
+          type: string
+          enum:
+            - new
+            - in_progress
+            - ended
+            - crush
+            - aborted
+    Commands:
+      type: array
+#      maximum: 10
+      items:
+        $ref: "#/components/schemas/Command"
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+
+

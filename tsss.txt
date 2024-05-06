@@ -1,2 +1,5 @@
 https://github.com/OAI/OpenAPI-Specification/blob/main/examples/v3.0/petstore.yaml
 https://github.com/golang-standards/project-layout/tree/master
+
+https://www.jvt.me/posts/2022/04/06/generate-go-client-openapi/
+https://www.jvt.me/posts/2022/07/12/go-openapi-server/
