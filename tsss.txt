@@ -3,3 +3,12 @@ https://github.com/golang-standards/project-layout/tree/master
 
 https://www.jvt.me/posts/2022/04/06/generate-go-client-openapi/
 https://www.jvt.me/posts/2022/07/12/go-openapi-server/
+
+https://github.com/gorilla/mux
+
+https://www.digitalocean.com/community/tutorials/how-to-make-an-http-server-in-go
+https://www.digitalocean.com/blog/create-a-simple-contacts-list-with-go
+
+https://go.dev/doc/tutorial/database-access
+
+https://www.calhoun.io/connecting-to-a-postgresql-database-with-gos-database-sql-package/

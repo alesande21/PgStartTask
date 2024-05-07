@@ -10,7 +10,7 @@ paths:
 #        required: false
 #        description: "ID of the user"
 #        allowEmptyValue: false
-#        schema:
+#        schema.sql:
 #          type: int
       responses:
         '200':

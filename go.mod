@@ -3,8 +3,10 @@ module PgStartTask
 go 1.21.1
 
 require (
+	github.com/deepmap/oapi-codegen v1.16.2
 	github.com/getkin/kin-openapi v0.124.0
 	github.com/gorilla/mux v1.8.1
+	github.com/lib/pq v1.10.9
 	github.com/oapi-codegen/runtime v1.1.1
 )
 
