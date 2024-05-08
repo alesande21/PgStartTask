@@ -1,6 +1,7 @@
 package main
 
 import (
+	"PgStartTask/db"
 	"PgStartTask/server/api"
 	"flag"
 	"fmt"
@@ -26,7 +27,10 @@ func main() {
 	// that server names match. We don't know how this thing will be run.
 	swagger.Servers = nil
 
-	scriptServer := api.NewScriptServer()
+	db := db.ConnectionToDB()
+	defer db.Close()
+
+	scriptServer := api.NewScriptServer(db)
 
 	r := mux.NewRouter()
 
