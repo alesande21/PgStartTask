@@ -3,7 +3,6 @@ package api
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -67,7 +66,6 @@ func (s *ScriptServer) CreateCommand(w http.ResponseWriter, r *http.Request) {
 
 	s.Lock.Lock()
 	defer s.Lock.Unlock()
-	fmt.Println("TUTUTUTUTU")
 	err := s.DB.QueryRow("INSERT INTO Script.scripts(body_script, result_run_script, status) VALUES($1,$2,$3) RETURNING id", newScript.BodyScript, newScript.ResultRunScript, newScript.Status).Scan(&newScript.Id)
 	if err != nil {
 		log.Println("Failed to insert row:", err)
