@@ -28,6 +28,7 @@ func ConnectionToDB() *sql.DB {
 
 	err = db.Ping()
 	if err != nil {
+		log.Println("Problems connecting to the database!")
 		panic(err)
 	}
 

@@ -65,10 +65,10 @@ type ServerInterface interface {
 	CreateCommand(w http.ResponseWriter, r *http.Request)
 	// Получение команды по идентификатору
 	// (GET /commands/{command_id})
-	ShowCommandById(w http.ResponseWriter, r *http.Request, commandId string)
+	ShowCommandById(w http.ResponseWriter, r *http.Request, commandId int64)
 	// Запуск команды по идентификатору
 	// (POST /commands/{command_id}/run)
-	RunCommandById(w http.ResponseWriter, r *http.Request, commandId string)
+	RunCommandById(w http.ResponseWriter, r *http.Request, commandId int64)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -117,7 +117,7 @@ func (siw *ServerInterfaceWrapper) ShowCommandById(w http.ResponseWriter, r *htt
 	var err error
 
 	// ------------- Path parameter "command_id" -------------
-	var commandId string
+	var commandId int64
 
 	err = runtime.BindStyledParameter("simple", false, "command_id", mux.Vars(r)["command_id"], &commandId)
 	if err != nil {
@@ -143,7 +143,7 @@ func (siw *ServerInterfaceWrapper) RunCommandById(w http.ResponseWriter, r *http
 	var err error
 
 	// ------------- Path parameter "command_id" -------------
-	var commandId string
+	var commandId int64
 
 	err = runtime.BindStyledParameter("simple", false, "command_id", mux.Vars(r)["command_id"], &commandId)
 	if err != nil {
@@ -289,20 +289,20 @@ func HandlerWithOptions(si ServerInterface, options GorillaServerOptions) http.H
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

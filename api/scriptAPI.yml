@@ -63,7 +63,8 @@ paths:
           required: true
           description: The id of the command to retrieve
           schema:
-            type: string
+            type: integer
+            format: int64
       responses:
         '200':
           description: ''
@@ -90,7 +91,8 @@ paths:
           required: true
           description: The id of the command to retrieve
           schema:
-            type: string
+            type: integer
+            format: int64
       responses:
         '200':
           description: 'Успешный запуск команды по идентификатору'

@@ -1,0 +1,1 @@
+SELECT * FROM Script.scripts WHERE id = 2
