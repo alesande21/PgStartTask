@@ -106,6 +106,33 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+  /commands/{command_id}/stop:
+    post:
+      summary: 'Остановка команды по идентификатору'
+      operationId: stopCommandById
+      tags:
+        - commands
+      parameters:
+        - name: command_id
+          in: path
+          required: true
+          description: The id of the command to retrieve
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 'Запущенная команда найдена!'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatusMessage"
+        default:
+          description: 'Что-то пошло не так при поиске команды по идентификатору'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
 
 
