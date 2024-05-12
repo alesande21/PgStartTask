@@ -18,16 +18,18 @@ type ScriptServer struct {
 	DB             *sql.DB
 	NextId         int64
 	cancelChannels map[int64]chan struct{}
+	commandToRun   chan Command
 	Lock           sync.Mutex
 }
 
 var _ ServerInterface = (*ScriptServer)(nil)
 
-func NewScriptServer(db *sql.DB) *ScriptServer {
+func NewScriptServer(db *sql.DB, commandToRun chan Command) *ScriptServer {
 	return &ScriptServer{
 		DB:             db,
 		NextId:         1,
 		cancelChannels: make(map[int64]chan struct{}),
+		commandToRun:   commandToRun,
 	}
 }
 
@@ -147,12 +149,12 @@ func (s *ScriptServer) ShowCommandById(w http.ResponseWriter, r *http.Request, c
 }
 
 func (s *ScriptServer) RunCommandById(w http.ResponseWriter, r *http.Request, commandId int64) {
-	var wg sync.WaitGroup
+	//var wg sync.WaitGroup
 
 	ping := s.DB.Ping()
 	if ping != nil {
 		sendScriptServerError(w, http.StatusNotFound, fmt.Sprintf("Ошибка соединения с базой данных!"))
-		log.Println("Problems connecting to the database!")
+		log.Println("Проблема с подключением к базе данных!")
 		return
 	}
 
@@ -190,92 +192,11 @@ func (s *ScriptServer) RunCommandById(w http.ResponseWriter, r *http.Request, co
 		return
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	s.commandToRun <- foundCommand
 
-	cancelChan := make(chan struct{})
-	s.Lock.Lock()
-	s.cancelChannels[commandId] = cancelChan
-	s.Lock.Unlock()
-
-	log.Printf("Команда запущена %d!", commandId)
-	cmd := exec.CommandContext(ctx, "bash", "-c", foundCommand.BodyScript)
-	wg.Add(1)
-	go func() {
-
-		defer wg.Done()
-		var out bytes.Buffer
-		cmd.Stdout = &out
-		err = cmd.Run()
-
-		if err != nil {
-			log.Println("Ошибка при исполнении команды:", err)
-			s.Lock.Lock()
-			_, err = s.DB.Exec("UPDATE Script.scripts SET status = $1 WHERE id = $2", Crush, commandId)
-			s.Lock.Unlock()
-			if err != nil {
-				log.Println("Ошибка при обновлении статуса:", err)
-			}
-			sendScriptServerError(w, http.StatusNotFound, fmt.Sprintf("Ошибка при исполнении команды!"))
-			return
-		}
-
-		s.Lock.Lock()
-		_, err = s.DB.Exec("UPDATE Script.scripts SET result_run_script = $1, status = $2 WHERE id = $3", out.String(), InProgress, commandId)
-		s.Lock.Unlock()
-		if err != nil {
-			sendScriptServerError(w, http.StatusNotFound, fmt.Sprintf("Ошибка при обновлении резульатата выполнения команды!"))
-			log.Println("Ошибка при обновлении резульатата выполнения команды:", err)
-			return
-		}
-
-		s.Lock.Lock()
-		_, err = s.DB.Exec("UPDATE Script.scripts SET status = $1 WHERE id = $2", Ended, commandId)
-		s.Lock.Unlock()
-		if err != nil {
-			sendScriptServerError(w, http.StatusNotFound, fmt.Sprintf("Ошибка при обновлении статуса!"))
-			log.Println("Ошибка при обновлении статуса:", err)
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-		resp := fmt.Sprintf("Команда под ID %d, выполнена и результат записан в базу данных!", commandId)
-		json.NewEncoder(w).Encode(resp)
-
-	}()
-
-	select {
-	case <-cancelChan:
-		wg.Done()
-		log.Println("Начало отмены процесса!")
-		cmd.Process.Kill()
-		s.Lock.Lock()
-		_, err = s.DB.Exec("UPDATE Script.scripts SET status = $1 WHERE id = $2", Aborted, commandId)
-		s.Lock.Unlock()
-		if err != nil {
-			sendScriptServerError(w, http.StatusNotFound, fmt.Sprintf("Ошибка при обновлении статуса!"))
-			log.Println("Ошибка при обновлении статуса:", err)
-		}
-		sendScriptServerError(w, http.StatusAccepted, fmt.Sprintf("Выполнение команды под ID %d прерван!", commandId))
-
-	default:
-		s.Lock.Lock()
-		defer s.Lock.Unlock()
-		wg.Wait()
-		cancel()
-		log.Println("Процесс не был отменен. Резульатат вносится в базу данных!")
-		//cancelChan, ok := s.cancelChannels[commandId]
-		//if !ok {
-		//	log.Println("Канал не найден!")
-		//	return
-		//}
-		close(cancelChan)
-		delete(s.cancelChannels, commandId)
-	}
-	/*
-		("UPDATE Script.scripts SET body_script = $1, result_run_script = $2, status = $3 WHERE id = $4",
-		        newBodyScript, newResultRunScript, newStatus, id)
-	*/
+	w.WriteHeader(http.StatusAccepted)
+	resp := fmt.Sprintf("Команда под ID %d запущена!", commandId)
+	json.NewEncoder(w).Encode(resp)
 
 }
 
@@ -310,6 +231,85 @@ func (s *ScriptServer) StopCommandById(w http.ResponseWriter, r *http.Request, c
 	cancelChan <- struct{}{}
 
 	w.WriteHeader(http.StatusAccepted)
-	resp := fmt.Sprintf("Команда под id %d найдена и запрос на прерывание передан!", commandId)
+	resp := fmt.Sprintf("Команда c id %d найдена и запрос на прерывание передан!", commandId)
 	json.NewEncoder(w).Encode(resp)
+}
+
+func (s *ScriptServer) RunCommand(command *Command) {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	cancelChan := make(chan struct{})
+	s.Lock.Lock()
+	s.cancelChannels[command.Id] = cancelChan
+	s.Lock.Unlock()
+
+	var statusCancel bool
+	statusCancel = false
+
+	cmd := exec.CommandContext(ctx, "bash", "-c", command.BodyScript)
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	log.Printf("Команда c ID %d запущена!", command.Id)
+
+	go func() {
+		<-cancelChan
+		cancel()
+		if cmd.Process != nil {
+			cmd.Process.Kill()
+		}
+		s.Lock.Lock()
+		_, err := s.DB.Exec("UPDATE Script.scripts SET status = $1 WHERE id = $2", Aborted, command.Id)
+		s.Lock.Unlock()
+		if err != nil {
+			log.Println("Ошибка при обновлении статуса:", err)
+		}
+		log.Printf("Команда c ID %d отменена!", command.Id)
+		statusCancel = true
+		close(cancelChan)
+		delete(s.cancelChannels, command.Id)
+	}()
+
+	//go func() {
+	err := cmd.Run()
+	if err != nil {
+		if !statusCancel {
+			log.Println("Ошибка при исполнении команды или команда была прервана:", err)
+			s.Lock.Lock()
+			_, err = s.DB.Exec("UPDATE Script.scripts SET status = $1 WHERE id = $2", Crush, command.Id)
+			s.Lock.Unlock()
+			if err != nil {
+				log.Println("Ошибка при обновлении статуса(Crush) в базе данных:", err)
+			}
+		}
+		cancel()
+		return
+	}
+
+	s.Lock.Lock()
+	_, err = s.DB.Exec("UPDATE Script.scripts SET result_run_script = $1, status = $2 WHERE id = $3", out.String(), Ended, command.Id)
+	s.Lock.Unlock()
+	if err != nil {
+		//sendScriptServerError(w, http.StatusNotFound, fmt.Sprintf("Ошибка при обновлении резульатата выполнения команды!"))
+		log.Printf("Ошибка при внесении в базу данных результата выполнение скрипта под id %d: %s", command.Id, err)
+		return
+	}
+	//}()
+
+	cancel()
+	log.Printf("Команды под id %d выполнена. Результат вносится в базу данных!", command.Id)
+	//close(cancelChan)
+	//delete(s.cancelChannels, command.Id)
+}
+
+//func (s *ScriptServer) AwaitingCancel(cancelChan chan struct{}) {
+//
+//}
+
+func ControlRunningCommand(server *ScriptServer) {
+	for {
+		select {
+		case commandId := <-server.commandToRun:
+			go server.RunCommand(&commandId)
+		}
+	}
 }

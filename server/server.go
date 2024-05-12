@@ -30,7 +30,11 @@ func main() {
 	db := db.ConnectionToDB()
 	defer db.Close()
 
-	scriptServer := api.NewScriptServer(db)
+	commandToRun := make(chan api.Command)
+
+	scriptServer := api.NewScriptServer(db, commandToRun)
+
+	go api.ControlRunningCommand(scriptServer)
 
 	r := mux.NewRouter()
 
