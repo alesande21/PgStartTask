@@ -14,6 +14,10 @@ import (
 	"sync"
 )
 
+//type Application struct {
+//	scriptServer ServerInterface
+//}
+
 type ScriptServer struct {
 	DB             *sql.DB
 	NextId         int64

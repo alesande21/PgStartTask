@@ -32,6 +32,7 @@ func main() {
 
 	commandToRun := make(chan api.Command)
 
+	//var app *Application
 	scriptServer := api.NewScriptServer(db, commandToRun)
 
 	go api.ControlRunningCommand(scriptServer)
