@@ -27,13 +27,15 @@ func main() {
 	// that server names match. We don't know how this thing will be run.
 	swagger.Servers = nil
 
-	db := db.ConnectionToDB()
-	defer db.Close()
+	realDB := db.RealDB{DB: db.ConnectionToDB()}
+
+	//db := db.ConnectionToDB()
+	defer realDB.DB.Close()
 
 	commandToRun := make(chan api.Command)
 
 	//var app *Application
-	scriptServer := api.NewScriptServer(db, commandToRun)
+	scriptServer := api.NewScriptServer(&realDB, commandToRun)
 
 	go api.ControlRunningCommand(scriptServer)
 

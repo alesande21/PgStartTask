@@ -18,8 +18,15 @@ import (
 //	scriptServer ServerInterface
 //}
 
+type DatabaseHandler interface {
+	QueryRow(query string, args ...interface{}) (*Command, error)
+	Query(query string, args ...interface{}) ([]Command, error)
+	Exec(query string, args ...interface{}) error
+	Ping() error
+}
+
 type ScriptServer struct {
-	DB             *sql.DB
+	DB             DatabaseHandler
 	NextId         int64
 	cancelChannels map[int64]chan struct{}
 	commandToRun   chan Command
@@ -28,7 +35,7 @@ type ScriptServer struct {
 
 var _ ServerInterface = (*ScriptServer)(nil)
 
-func NewScriptServer(db *sql.DB, commandToRun chan Command) *ScriptServer {
+func NewScriptServer(db DatabaseHandler, commandToRun chan Command) *ScriptServer {
 	return &ScriptServer{
 		DB:             db,
 		NextId:         1,
@@ -51,32 +58,11 @@ func sendScriptServerError(w http.ResponseWriter, code int, message string) {
 
 func (s *ScriptServer) GetCommands(w http.ResponseWriter, r *http.Request) {
 	s.Lock.Lock()
-	ping := s.DB.Ping()
-	s.Lock.Unlock()
-	if ping != nil {
-		log.Println("Problems connecting to the database!")
-		return
-	}
-
-	//s.Lock.Lock()
-	//defer s.Lock.Unlock()
-	s.Lock.Lock()
-	rows, err := s.DB.Query("SELECT * FROM Script.scripts LIMIT 10")
+	commands, err := s.DB.Query("SELECT * FROM Script.scripts LIMIT 10")
 	s.Lock.Unlock()
 
 	if err != nil {
-		log.Println("Failed to find commands!", err)
 		return
-	}
-
-	var foundCommand Command
-	var commands []Command
-	for rows.Next() {
-		err := rows.Scan(&foundCommand.Id, &foundCommand.BodyScript, &foundCommand.ResultRunScript, &foundCommand.Status)
-		if err != nil {
-			return
-		}
-		commands = append(commands, foundCommand)
 	}
 
 	response, err2 := json.Marshal(commands)
@@ -97,16 +83,10 @@ func (s *ScriptServer) CreateCommand(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ping := s.DB.Ping()
-
-	if ping != nil {
-		log.Println("Problems connecting to the database!")
-		return
-	}
-
 	s.Lock.Lock()
 	defer s.Lock.Unlock()
-	err := s.DB.QueryRow("INSERT INTO Script.scripts(body_script, result_run_script, status) VALUES($1,$2,$3) RETURNING id", newScript.BodyScript, newScript.ResultRunScript, newScript.Status).Scan(&newScript.Id)
+	command, err := s.DB.QueryRow("INSERT INTO Script.scripts(body_script, result_run_script, status) VALUES($1,$2,$3) RETURNING id, body_script, result_run_script, status", newScript.BodyScript, newScript.ResultRunScript, newScript.Status)
+
 	if err != nil {
 		log.Println("Failed to insert row:", err)
 		return
@@ -114,23 +94,16 @@ func (s *ScriptServer) CreateCommand(w http.ResponseWriter, r *http.Request) {
 	s.NextId++
 
 	w.WriteHeader(http.StatusCreated)
-	resp := "Новая запись создана под ID: " + strconv.FormatInt(newScript.Id, 10)
+	resp := "Новая запись создана под ID: " + strconv.FormatInt(command.Id, 10)
 	json.NewEncoder(w).Encode(resp)
 
 }
 
 func (s *ScriptServer) ShowCommandById(w http.ResponseWriter, r *http.Request, commandId int64) {
-	ping := s.DB.Ping()
-	if ping != nil {
-		log.Println("Problems connecting to the database!")
-		return
-	}
-
 	s.Lock.Lock()
 	defer s.Lock.Unlock()
 
-	var foundCommand Command
-	err := s.DB.QueryRow("SELECT * FROM Script.scripts WHERE id = $1", commandId).Scan(&foundCommand.Id, &foundCommand.BodyScript, &foundCommand.ResultRunScript, &foundCommand.Status)
+	foundCommand, err := s.DB.QueryRow("SELECT * FROM Script.scripts WHERE id = $1", commandId)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -162,12 +135,10 @@ func (s *ScriptServer) RunCommandById(w http.ResponseWriter, r *http.Request, co
 		return
 	}
 
-	//s.Lock.Lock()
-	//defer s.Lock.Unlock()
-
-	var foundCommand Command
+	//var foundCommand Command
 	s.Lock.Lock()
-	err := s.DB.QueryRow("SELECT * FROM Script.scripts WHERE id = $1", commandId).Scan(&foundCommand.Id, &foundCommand.BodyScript, &foundCommand.ResultRunScript, &foundCommand.Status)
+	foundCommand, err := s.DB.QueryRow("SELECT * FROM Script.scripts WHERE id = $1", commandId)
+	//err := s.DB.QueryRow("SELECT * FROM Script.scripts WHERE id = $1", commandId).Scan(&foundCommand.Id, &foundCommand.BodyScript, &foundCommand.ResultRunScript, &foundCommand.Status)
 	s.Lock.Unlock()
 
 	if err != nil {
@@ -187,7 +158,8 @@ func (s *ScriptServer) RunCommandById(w http.ResponseWriter, r *http.Request, co
 	}
 
 	s.Lock.Lock()
-	_, err = s.DB.Exec("UPDATE Script.scripts SET status = $1 WHERE id = $2", InProgress, commandId)
+	err = s.DB.Exec("UPDATE Script.scripts SET status = $1 WHERE id = $2", InProgress, commandId)
+	//_, err = s.DB.Exec("UPDATE Script.scripts SET status = $1 WHERE id = $2", InProgress, commandId)
 	s.Lock.Unlock()
 
 	if err != nil {
@@ -196,7 +168,7 @@ func (s *ScriptServer) RunCommandById(w http.ResponseWriter, r *http.Request, co
 		return
 	}
 
-	s.commandToRun <- foundCommand
+	s.commandToRun <- *foundCommand
 
 	w.WriteHeader(http.StatusAccepted)
 	resp := fmt.Sprintf("Команда под ID %d запущена!", commandId)
@@ -207,8 +179,9 @@ func (s *ScriptServer) RunCommandById(w http.ResponseWriter, r *http.Request, co
 func (s *ScriptServer) StopCommandById(w http.ResponseWriter, r *http.Request, commandId int64) {
 	s.Lock.Lock()
 	defer s.Lock.Unlock()
-	var foundCommand Command
-	err := s.DB.QueryRow("SELECT * FROM Script.scripts WHERE id = $1", commandId).Scan(&foundCommand.Id, &foundCommand.BodyScript, &foundCommand.ResultRunScript, &foundCommand.Status)
+	//var foundCommand Command
+	//err := s.DB.QueryRow("SELECT * FROM Script.scripts WHERE id = $1", commandId).Scan(&foundCommand.Id, &foundCommand.BodyScript, &foundCommand.ResultRunScript, &foundCommand.Status)
+	foundCommand, err := s.DB.QueryRow("SELECT * FROM Script.scripts WHERE id = $1", commandId)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -262,7 +235,8 @@ func (s *ScriptServer) RunCommand(command *Command) {
 			cmd.Process.Kill()
 		}
 		s.Lock.Lock()
-		_, err := s.DB.Exec("UPDATE Script.scripts SET status = $1 WHERE id = $2", Aborted, command.Id)
+		err := s.DB.Exec("UPDATE Script.scripts SET status = $1 WHERE id = $2", Aborted, command.Id)
+		//_, err := s.DB.Exec("UPDATE Script.scripts SET status = $1 WHERE id = $2", Aborted, command.Id)
 		s.Lock.Unlock()
 		if err != nil {
 			log.Println("Ошибка при обновлении статуса:", err)
@@ -279,7 +253,8 @@ func (s *ScriptServer) RunCommand(command *Command) {
 		if !statusCancel {
 			log.Println("Ошибка при исполнении команды или команда была прервана:", err)
 			s.Lock.Lock()
-			_, err = s.DB.Exec("UPDATE Script.scripts SET status = $1 WHERE id = $2", Crush, command.Id)
+			err = s.DB.Exec("UPDATE Script.scripts SET status = $1 WHERE id = $2", Crush, command.Id)
+			//_, err = s.DB.Exec("UPDATE Script.scripts SET status = $1 WHERE id = $2", Crush, command.Id)
 			s.Lock.Unlock()
 			if err != nil {
 				log.Println("Ошибка при обновлении статуса(Crush) в базе данных:", err)
@@ -290,7 +265,8 @@ func (s *ScriptServer) RunCommand(command *Command) {
 	}
 
 	s.Lock.Lock()
-	_, err = s.DB.Exec("UPDATE Script.scripts SET result_run_script = $1, status = $2 WHERE id = $3", out.String(), Ended, command.Id)
+	err = s.DB.Exec("UPDATE Script.scripts SET result_run_script = $1, status = $2 WHERE id = $3", out.String(), Ended, command.Id)
+	//_, err = s.DB.Exec("UPDATE Script.scripts SET result_run_script = $1, status = $2 WHERE id = $3", out.String(), Ended, command.Id)
 	s.Lock.Unlock()
 	if err != nil {
 		//sendScriptServerError(w, http.StatusNotFound, fmt.Sprintf("Ошибка при обновлении резульатата выполнения команды!"))
