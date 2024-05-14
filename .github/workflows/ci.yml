@@ -20,7 +20,7 @@ jobs:
         run: go mod download
 
       - name: Build
-        run: go build ./server/server
+        run: go build -o commandServer ./server/server
 
 #      - name: Test
 #        run: make test
