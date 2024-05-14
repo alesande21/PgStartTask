@@ -7,11 +7,17 @@ genClient:
 genServer:
 	oapi-codegen --config=configs/oapi/configServer.yaml api/scriptAPI.yml
 
-startDefault:
+runDefault:
 	go run ./server/server.go
 
-startCustom:
+runCustom:
 	go run ./server/server.go -ip 127.0.0.1 -port 8080
+
+buildDefault:
+	go build ./server/server.go
+
+buildCustom:
+	go build ./server/server.go -ip 127.0.0.1 -port 8080
 
 test:
 	go test ./tests
