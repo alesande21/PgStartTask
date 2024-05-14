@@ -83,29 +83,27 @@ func (r *RealDB) Exec(query string, args ...interface{}) error {
 	}
 
 	_, err := r.DB.Exec(query, args...)
-
 	return err
 }
 
-func ConnectionToDB() *sql.DB {
+func ConnectionToDB() (*sql.DB, error) {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
 
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
-		panic(err)
+		log.Printf("Проблемы с подключением к базе данных: %s", err.Error())
+		return nil, err
 	}
-	//defer db.Close()
 
 	err = db.Ping()
 	if err != nil {
-		log.Println("Problems connecting to the database!")
-		panic(err)
+		log.Printf("Проблемы с подключением к базе данных: %s", err.Error())
+		return nil, err
 	}
 
 	log.Println(api.ColorString(api.FgYellow, "Успешное подключение к базе данных!"))
-	//fmt.Println("Successfully connected!")
 
-	return db
+	return db, nil
 }

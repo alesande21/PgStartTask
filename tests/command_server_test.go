@@ -25,16 +25,11 @@ func TestCommandServer(t *testing.T) {
 	var err error
 
 	swagger, err := api.GetSwagger()
-
 	require.NoError(t, err)
-
 	swagger.Servers = nil
 
 	mockDB := mocks.NewMockDB()
-
 	commandToRun := make(chan api.Command)
-
-	//var app *Application
 	scriptServer := api.NewScriptServer(mockDB, commandToRun)
 
 	go api.ControlRunningCommand(scriptServer)
@@ -137,27 +132,6 @@ func TestCommandServer(t *testing.T) {
 
 		fmt.Println(rr)
 		time.Sleep(5)
-
-		/*
-			rr = testutil.NewRequest().Post("/commands/1/stop").WithJsonBody(command).GoWithHTTPHandler(t, r).Recorder
-			assert.Equal(t, http.StatusAccepted, rr.Code)
-
-			fmt.Println(rr)
-			//fmt.Println(rr2)
-
-			rr = testutil.NewRequest().Get("/commands/1").WithJsonBody(command).GoWithHTTPHandler(t, r).Recorder
-			assert.Equal(t, http.StatusOK, rr.Code)
-
-			fmt.Println(rr)
-			var resultCommand api.Command
-			err = json.NewDecoder(rr.Body).Decode(&resultCommand)
-
-			assert.Equal(t, command.Id, resultCommand.Id)
-			assert.Equal(t, command.BodyScript, resultCommand.BodyScript)
-			assert.Equal(t, command.ResultRunScript, resultCommand.ResultRunScript)
-			assert.Equal(t, command.Status, resultCommand.Status)
-
-		*/
 
 	})
 

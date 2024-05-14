@@ -19,7 +19,6 @@ var (
 )
 
 func main() {
-	//var port = flag.Int("port", 8080, "Порт для тестироования http сервера")
 	flag.Parse()
 
 	swagger, err := api.GetSwagger()
@@ -31,16 +30,17 @@ func main() {
 
 	swagger.Servers = nil
 
-	realDB := db.RealDB{DB: db.ConnectionToDB()}
+	dbCon, errCon := db.ConnectionToDB()
+	if errCon != nil {
+		return
+	}
+
+	realDB := db.RealDB{DB: dbCon}
 	defer realDB.DB.Close()
 
 	commandToRun := make(chan api.Command)
-
-	//var app *Application
 	scriptServer := api.NewScriptServer(&realDB, commandToRun)
-
 	go api.ControlRunningCommand(scriptServer)
-
 	r := mux.NewRouter()
 
 	r.Use(middleware.OapiRequestValidator(swagger))
@@ -52,7 +52,6 @@ func main() {
 	}
 
 	log.Printf("Подключнеие установлено -> %s:%s", api.ColorString(api.FgYellow, *Ip), api.ColorString(api.FgYellow, strconv.Itoa(*Port)))
-
 	log.Fatal(s.ListenAndServe())
 
 }
