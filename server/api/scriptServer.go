@@ -18,9 +18,14 @@ import (
 //	scriptServer ServerInterface
 //}
 
+const (
+	Localhost   = "127.0.0.1"
+	DefaultPort = 8080
+)
+
 type DatabaseHandler interface {
 	QueryRow(query string, args ...interface{}) (*Command, error)
-	Query(query string, args ...interface{}) ([]Command, error)
+	Query(query string, args ...interface{}) (Commands, error)
 	Exec(query string, args ...interface{}) error
 	Ping() error
 }
@@ -109,6 +114,7 @@ func (s *ScriptServer) ShowCommandById(w http.ResponseWriter, r *http.Request, c
 		if errors.Is(err, sql.ErrNoRows) {
 			sendScriptServerError(w, http.StatusNotFound, fmt.Sprintf("Не найден скрипт по id %d!", commandId))
 		} else {
+			sendScriptServerError(w, http.StatusNotFound, fmt.Sprintf("Не найден скрипт по id %d!", commandId))
 			log.Println("Failed to find command by id:", err)
 		}
 		return

@@ -20,7 +20,7 @@ type RealDB struct {
 	DB *sql.DB
 }
 
-func (r *RealDB) Query(query string, args ...interface{}) ([]api.Command, error) {
+func (r *RealDB) Query(query string, args ...interface{}) (api.Commands, error) {
 	pErr := r.DB.Ping()
 	if pErr != nil {
 		log.Println("Problems connecting to the database!")
@@ -104,7 +104,7 @@ func ConnectionToDB() *sql.DB {
 		panic(err)
 	}
 
-	log.Println("Successfully connected!")
+	log.Println(api.ColorString(api.FgYellow, "Успешное подключение к базе данных!"))
 	//fmt.Println("Successfully connected!")
 
 	return db
