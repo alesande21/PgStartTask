@@ -23,7 +23,7 @@ services:
     depends_on:
       - db
     command: >
-      sh -c "sleep 10 && ./server"
+      sh -c "sleep 10 && ./app/server"
 #     sh -c "sleep 10 && psql -h localhost -U postgres -d postgres -f schema.sql && ./server"
 
 volumes:
