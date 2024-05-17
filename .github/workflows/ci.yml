@@ -85,7 +85,7 @@ jobs:
 
       - name: Deploy to server
         run: |
-          ssh -o "StrictHostKeyChecking=no" yc-sa-pgstart@${{ secrets.IP_VIRTUAL_M }} "\
+          ssh -o "StrictHostKeyChecking=no" slava19v@${{ secrets.IP_VIRTUAL_M }} "\
           sudo docker login --username oauth --password-stdin cr.yandex <<< ${{ secrets.IAM_TOKEN }}; \
           sudo docker-compose down; \
           IMAGES=\$(sudo docker images -q); \
