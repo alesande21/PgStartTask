@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 env:
   CR_REGISTRY: crp6prgfic4t20er8gcr
-  CR_REPOSITORY: myRepo
+  CR_REPOSITORY: pgstart
   IMAGE_TAG: ${{ github.sha }}
 
 jobs:
