@@ -23,8 +23,9 @@ services:
     depends_on:
       - db
     command: >
-      sh -c "sleep 10 && ./app/server"
-#     sh -c "sleep 10 && psql -h localhost -U postgres -d postgres -f schema.sql && ./server"
+       sh -c "sleep 10 && ls && psql -h db -U postgres -d postgres -f /docker-entrypoint-initdb.d/schema.sql && ./server"
+#      sh -c "sleep 10 && ./app/server"
+#     sh -c "sleep 10 && psql -h db -U postgres -d postgres -f /docker-entrypoint-initdb.d/schema.sql && ./server"
 
 volumes:
   postgres_data:
