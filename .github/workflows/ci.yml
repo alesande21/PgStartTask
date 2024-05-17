@@ -86,16 +86,16 @@ jobs:
       - name: Deploy to server
         run: |
           ssh -o "StrictHostKeyChecking=no" slava19v@${{ secrets.IP_VIRTUAL_M }} "\
-          sudo docker login --username oauth --password-stdin cr.yandex <<< ${{ secrets.IAM_TOKEN }}; \
-#          sudo docker-compose down; \
-#          IMAGES=\$(sudo docker images -q); \
-#          if [ ! -z \"\$IMAGES\" ]; then \
-#            sudo docker rmi -f \$IMAGES; \
-#          fi; \
-#          echo 'Pulling image'; \
-#          sudo docker pull cr.yandex/$CR_REGISTRY/$CR_REPOSITORY:$IMAGE_TAG; \
-#          echo 'Finding latest tag'; \
-#          LATEST_TAG=\$(sudo docker images cr.yandex/crp6prgfic4t20er8gcr/pgstart:1c372b3c022ed72fba041ef5595fe240b0856e77 --format '{{.Tag}} {{.CreatedAt}}' | sort -r | head -n 1 | awk '{print \$1}'); \
-#          echo 'Running docker-compose up with tag: $LATEST_TAG'; \
-#          sudo -E TAG=\$LATEST_TAG docker-compose up -d"
+          sudo docker login --username oauth --password-stdin cr.yandex <<< ${{ secrets.OAUTH_TOKEN }}; \
+          sudo docker-compose down; \
+          IMAGES=\$(sudo docker images -q); \
+          if [ ! -z \"\$IMAGES\" ]; then \
+            sudo docker rmi -f \$IMAGES; \
+          fi; \
+          echo 'Pulling image'; \
+          sudo docker pull cr.yandex/$CR_REGISTRY/$CR_REPOSITORY:$IMAGE_TAG; \
+          echo 'Finding latest tag'; \
+          LATEST_TAG=\$(sudo docker images cr.yandex/crp6prgfic4t20er8gcr/pgstart:1c372b3c022ed72fba041ef5595fe240b0856e77 --format '{{.Tag}} {{.CreatedAt}}' | sort -r | head -n 1 | awk '{print \$1}'); \
+          echo 'Running docker-compose up with tag: $LATEST_TAG'; \
+          sudo -E TAG=\$LATEST_TAG docker-compose up -d"
           
