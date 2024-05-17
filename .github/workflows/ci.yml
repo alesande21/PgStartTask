@@ -79,8 +79,8 @@ jobs:
 
       - name: Copy docker-compose.yaml to server
         run: |
-          scp -o "StrictHostKeyChecking=no" ./docker-compose.yaml yc-sa-pgstart@${{ secrets.IP_VIRTUAL_M }}:/home/yc-sa-pgstart  
-          scp -o "StrictHostKeyChecking=no" ./resources/schema.sql yc-sa-pgstart@${{ secrets.IP_VIRTUAL_M }}:/home/yc-sa-pgstart 
+          scp -o "StrictHostKeyChecking=no" ./docker-compose.yaml slava19v@${{ secrets.IP_VIRTUAL_M }}:/home/slava19v  
+          scp -o "StrictHostKeyChecking=no" ./resources/schema.sql slava19v@${{ secrets.IP_VIRTUAL_M }}:/home/slava19v 
 
 
       - name: Deploy to server
