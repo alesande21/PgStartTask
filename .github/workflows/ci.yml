@@ -65,11 +65,12 @@ jobs:
         id: login-cr
         uses: yc-actions/yc-cr-login@v1
         with:
-          yc-sa-json-credentials: ${{ secrets.AUTHORIZED_KEY }}
+          yc-sa-json-credentials: ${{ secrets.IAM_TOKEN }}
 
       - name: Build, tag, and push image to Yandex Cloud Container Registry
         run: |
           docker build -t cr.yandex/$CR_REGISTRY/$CR_REPOSITORY:$IMAGE_TAG .
           docker push cr.yandex/$CR_REGISTRY/$CR_REPOSITORY:$IMAGE_TAG
+          
           
           
