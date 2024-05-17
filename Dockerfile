@@ -15,6 +15,8 @@ COPY . .
 # Сборка приложения
 RUN make buildCustom
 
+RUN apk add --no-cache postgresql-client
+
 # Настройка порта, который будет использоваться
 EXPOSE 8080
 

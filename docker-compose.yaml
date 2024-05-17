@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: 1
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    image: cr.yandex/crp6prgfic4t20er8gcr/pgstart:1c372b3c022ed72fba041ef5595fe240b0856e77
+    ports:
+      - "8080:8080"
+    environment:
+      PGPASSWORD: 1
+    depends_on:
+      - db
+    command: >
+      sleep 10 && psql -h localhost -U postgres -d postgres -f resources/schema.sql && make startServer
+
+        
