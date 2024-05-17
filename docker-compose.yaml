@@ -23,4 +23,5 @@ services:
     command: >
       sleep 10 && psql -h localhost -U postgres -d postgres -f schema.sql && make startServer
 
-        
+volumes:
+  postgres_data:
