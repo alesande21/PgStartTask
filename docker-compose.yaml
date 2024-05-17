@@ -11,6 +11,8 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
 
   app:
     image: cr.yandex/crp6prgfic4t20er8gcr/pgstart:1c372b3c022ed72fba041ef5595fe240b0856e77
@@ -21,7 +23,8 @@ services:
     depends_on:
       - db
     command: >
-     sh -c "sleep 10 && psql -h localhost -U postgres -d postgres -f schema.sql && ./myapp"
+      sh -c "sleep 10 && ./server"
+#     sh -c "sleep 10 && psql -h localhost -U postgres -d postgres -f schema.sql && ./server"
 
 volumes:
   postgres_data:
