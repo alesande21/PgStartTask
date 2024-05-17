@@ -13,14 +13,14 @@ RUN go mod download
 COPY . .
 
 # Сборка приложения
-RUN go build -o server ./server
+RUN go build -o myServer ./server
 
 FROM alpine:latest as final
 
 RUN apk --no-cache add ca-certificates
 RUN apk add --no-cache postgresql-client
 
-COPY --from=builder /app/server .
+COPY --from=builder /app/myServer .
 
 # Настройка порта, который будет использоваться
 EXPOSE 8080
