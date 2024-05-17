@@ -18,7 +18,6 @@ RUN make buildCustom
 FROM alpine:latest as final
 
 RUN apk --no-cache add ca-certificates
-FROM cr.yandex/crp6prgfic4t20er8gcr/pgstart:1c372b3c022ed72fba041ef5595fe240b0856e77
 RUN apk add --no-cache postgresql-client
 
 COPY --from=builder /app/myapp .
