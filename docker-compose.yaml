@@ -21,6 +21,6 @@ services:
     depends_on:
       - db
     command: >
-      sleep 10 && psql -h localhost -U postgres -d postgres -f resources/schema.sql && make startServer
+      sleep 10 && psql -h localhost -U postgres -d postgres -f schema.sql && make startServer
 
         

@@ -79,13 +79,14 @@ jobs:
 
       - name: Copy docker-compose.yaml to server
         run: |
-          scp -o "StrictHostKeyChecking=no" ./docker-compose.yaml yc-sa-pgstart@${{ secrets.VM_IP }}:/home/yc-sa-pgstart  
-          
+          scp -o "StrictHostKeyChecking=no" ./docker-compose.yaml yc-sa-pgstart@${{ secrets.IP_VIRTUAL_M }}:/home/yc-sa-pgstart  
+          scp -o "StrictHostKeyChecking=no" ./resources/schema.sql yc-sa-pgstart@${{ secrets.IP_VIRTUAL_M }}:/home/yc-sa-pgstart 
+
 
       - name: Deploy to server
         run: |
-          ssh -o "StrictHostKeyChecking=no" yc-sa-pgstart@${{ secrets.VM_IP }} "\
-          sudo docker login --username oauth --password-stdin cr.yandex <<< ${{ secrets.OAUTH_TOKEN }}; \
+          ssh -o "StrictHostKeyChecking=no" yc-sa-pgstart@${{ secrets.IP_VIRTUAL_M }} "\
+          sudo docker login --username oauth --password-stdin cr.yandex <<< ${{ secrets.IAM_TOKEN }}; \
           sudo docker-compose down; \
           IMAGES=\$(sudo docker images -q); \
           if [ ! -z \"\$IMAGES\" ]; then \
