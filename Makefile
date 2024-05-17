@@ -17,7 +17,7 @@ buildDefault:
 	go build ./server/server.go
 
 buildCustom:
-	go build -o build/server ./server/server.go
+	go build -o build/server ./server
 
 startServer:
 	./build/server

@@ -15,13 +15,13 @@ COPY . .
 # Сборка приложения
 RUN make buildCustom
 
-# Настройка порта, который будет использоваться
-EXPOSE 8080
-
 FROM alpine:latest as final
 RUN apk --no-cache add ca-certificates postgresql-client
 
-COPY --from=builder /app .
+COPY --from=builder /app/myapp .
+
+# Настройка порта, который будет использоваться
+EXPOSE 8080
 
 # Определение точки входа для контейнера
 #RUN sh entrypoint.sh
