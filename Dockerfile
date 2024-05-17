@@ -18,6 +18,9 @@ RUN make buildCustom
 # Настройка порта, который будет использоваться
 EXPOSE 8080
 
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates
+
 # Определение точки входа для контейнера
-RUN sh entrypoint.sh
+#RUN sh entrypoint.sh
 #ENTRYPOINT ["top", "-b"]

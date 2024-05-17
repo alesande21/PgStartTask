@@ -17,7 +17,10 @@ buildDefault:
 	go build ./server/server.go
 
 buildCustom:
-	go build ./server/server.go -ip 178.154.207.133 -port 8080
+	go build -o build/server ./server/server.go
+
+startServer:
+	./build/server
 
 test:
 	go test ./tests
