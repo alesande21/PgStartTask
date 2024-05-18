@@ -98,4 +98,3 @@ jobs:
           LATEST_TAG=\$(sudo docker images cr.yandex/crp6prgfic4t20er8gcr/pgstart:1c372b3c022ed72fba041ef5595fe240b0856e77 --format '{{.Tag}} {{.CreatedAt}}' | sort -r | head -n 1 | awk '{print \$1}'); \
           echo 'Running docker-compose up with tag: $LATEST_TAG'; \
           sudo -E TAG=\$LATEST_TAG docker-compose up -d"
-          
