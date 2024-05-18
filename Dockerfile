@@ -25,6 +25,7 @@ COPY --from=builder /app/myServer .
 # Настройка порта, который будет использоваться
 EXPOSE 8080
 
+#ENTRYPOINT ["./myServer"]
 # Определение точки входа для контейнера
 #RUN sh entrypoint.sh
 #ENTRYPOINT ["top", "-b"]
