@@ -27,7 +27,9 @@ RUN apk add --no-cache postgresql-client
 RUN mkdir -p /app
 
 COPY --from=builder /app/myServer /app/myServer
-RUN ls
+
+RUN cd app && ls -l
+
 # Делаем файл исполняемым
 RUN chmod +x /app/myServer
 
