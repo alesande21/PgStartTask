@@ -15,7 +15,7 @@ services:
 
 
   app:
-    image: cr.yandex/crp6prgfic4t20er8gcr/pgstart:8dd767a459a2914fa2cb6c170313c5bd2d9610a3
+    image: cr.yandex/crp6prgfic4t20er8gcr/pgstart:latest
     ports:
       - "8080:8080"
     environment:
