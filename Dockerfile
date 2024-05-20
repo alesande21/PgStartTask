@@ -13,10 +13,10 @@ RUN go mod download
 # Копируем исходный код приложения
 COPY . .
 
-RUN ls
-
 # Сборка приложения
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o myServer ./server
+
+RUN cd server && ls
 # RUN go build -o myServer ./server
 
 FROM alpine:latest as final
@@ -27,7 +27,7 @@ RUN apk add --no-cache postgresql-client
 RUN mkdir -p /app
 
 COPY --from=builder /app/myServer .
-
+RUN ls
 # Делаем файл исполняемым
 RUN chmod +x /app/myServer
 
