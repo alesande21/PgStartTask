@@ -16,7 +16,7 @@ COPY . .
 # Сборка приложения
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o myServer ./server
 
-RUN cd server && ls
+RUN ls -l
 # RUN go build -o myServer ./server
 
 FROM alpine:latest as final
@@ -28,6 +28,7 @@ RUN mkdir -p /app
 
 COPY --from=builder /app/myServer /app/myServer
 
+RUN ls -l
 RUN cd app && ls -l
 
 # Делаем файл исполняемым
