@@ -15,7 +15,7 @@ services:
 
 
   app:
-    image: cr.yandex/crp6prgfic4t20er8gcr/pgstart:1c372b3c022ed72fba041ef5595fe240b0856e77
+    image: cr.yandex/crp6prgfic4t20er8gcr/pgstart:8dd767a459a2914fa2cb6c170313c5bd2d9610a3
     ports:
       - "8080:8080"
     environment:
@@ -33,4 +33,5 @@ services:
 
 volumes:
   postgres_data:
+
 
