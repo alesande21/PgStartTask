@@ -13,6 +13,8 @@ RUN go mod download
 # Копируем исходный код приложения
 COPY . .
 
+RUN ls
+
 # Сборка приложения
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o myServer ./server
 # RUN go build -o myServer ./server
