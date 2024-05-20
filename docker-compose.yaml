@@ -23,12 +23,14 @@ services:
     depends_on:
       - db
     command: >
-      sh -c "while ! pg_isready -h db -U postgres; do sleep 1; done && 
-      psql -h db -U postgres -d postgres -f /docker-entrypoint-initdb.d/schema.sql &&
-      ./myServer"
+      sh -c "sleep 10 && ./myServer"
+#      sh -c "while ! pg_isready -h db -U postgres; do sleep 1; done &&
+#      psql -h db -U postgres -d postgres -f /docker-entrypoint-initdb.d/schema.sql &&
+#      ./myServer"
 #       sh -c "sleep 10 && cd home && ls && psql -h db -U postgres -d postgres -f /docker-entrypoint-initdb.d/schema.sql && ./myServer"
 #      sh -c "sleep 10 && ./app/server"
 #     sh -c "sleep 10 && psql -h db -U postgres -d postgres -f /docker-entrypoint-initdb.d/schema.sql && ./server"
 
 volumes:
   postgres_data:
+
