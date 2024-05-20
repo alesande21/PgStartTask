@@ -2,6 +2,7 @@
 FROM golang:1.21 as builder
 LABEL authors="alesande"
 
+RUN mkdir -p /app
 # Устанавливаем рабочую директорию внутри контейнера
 WORKDIR /app
 
@@ -21,10 +22,14 @@ FROM alpine:latest as final
 RUN apk --no-cache add ca-certificates
 RUN apk add --no-cache postgresql-client
 
+RUN mkdir -p /app
+
 COPY --from=builder /app/myServer .
 
 # Делаем файл исполняемым
-# RUN #chmod +x /app/myServer
+RUN chmod +x /app/myServer
+
+WORKDIR /app
 
 # Настройка порта, который будет использоваться
 EXPOSE 8080
