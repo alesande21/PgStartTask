@@ -20,10 +20,16 @@ FROM alpine:latest as final
 RUN apk --no-cache add ca-certificates
 RUN apk add --no-cache postgresql-client
 
-COPY --from=builder /app/myServer .
+COPY --from=builder /app/myServer /app/myServer
+
+# Делаем файл исполняемым
+RUN chmod +x /app/myServer
 
 # Настройка порта, который будет использоваться
 EXPOSE 8080
+
+# Определение рабочей директории
+WORKDIR /app
 
 #ENTRYPOINT ["./myServer"]
 # Определение точки входа для контейнера
