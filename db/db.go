@@ -9,10 +9,10 @@ import (
 )
 
 const (
-	host     = "localhost"
+	host     = "slava19v-db-1"
 	port     = 5432
 	user     = "postgres"
-	password = "postgres"
+	password = "1"
 	dbname   = "postgres"
 )
 
