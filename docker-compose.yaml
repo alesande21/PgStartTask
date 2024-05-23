@@ -23,7 +23,7 @@ services:
     depends_on:
       - db
     command: >
-      sh -c "sleep 10 && ./myServer -ip 178.154.207.133 -port 8080"
+      sh -c "sleep 10 && ./myServer"
 #      sh -c "while ! pg_isready -h db -U postgres; do sleep 1; done &&
 #      psql -h db -U postgres -d postgres -f /docker-entrypoint-initdb.d/schema.sql &&
 #      ./myServer"
