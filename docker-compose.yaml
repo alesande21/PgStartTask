@@ -12,7 +12,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
-
+    command: ["sh", "-c", "echo 'Executing schema.sql'; cat /docker-entrypoint-initdb.d/schema.sql; docker-entrypoint.sh postgres"]
 
   app:
     image: cr.yandex/crp6prgfic4t20er8gcr/pgstart:${TAG}
