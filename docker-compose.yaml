@@ -35,4 +35,3 @@ volumes:
   postgres_data:
 
 
-
